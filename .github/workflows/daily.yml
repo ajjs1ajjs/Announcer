@@ -1,0 +1,31 @@
+name: Daily Sports Digest
+
+on:
+  schedule:
+    # UTC 05:00 = Kyiv 08:00 (взимку) або 07:00 (влітку)
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+
+jobs:
+  send-digest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run announcer
+        env:
+          FOOTBALL_API_KEY: ${{ secrets.FOOTBALL_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DAYS_AHEAD: "7"
+          TIMEZONE_OFFSET: "3"
+        run: python main.py
