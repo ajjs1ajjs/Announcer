@@ -71,8 +71,8 @@ def format_football_section(matches: List[Dict]) -> str:
             lines.append(f"\n{emblem} <b>{current_comp}</b>")
 
         date = m.get("date", "???")
-        home = m["home_team"]
-        away = m["away_team"]
+        home = m.get("home_team") or "?"
+        away = m.get("away_team") or "?"
         home_flag = _team_flag(home)
         away_flag = _team_flag(away)
         stage_info = _stage_label(m)

@@ -4,6 +4,7 @@ import traceback
 from announcer.config import Config
 from announcer.football import FootballAPI
 from announcer.boxing import BoxingAPI
+from announcer.thesportsdb import TheSportsDBAPI
 from announcer.formatter import format_daily_digest
 from announcer.telegram_bot import TelegramBot
 
@@ -27,6 +28,14 @@ def main():
         print(f"Football API error: {e}")
         bot.send_error(f"Football API: {e}")
         football_matches = []
+
+    try:
+        extra_matches = TheSportsDBAPI(config).get_upcoming_matches()
+        print(f"TheSportsDB matches found: {len(extra_matches)}")
+        football_matches.extend(extra_matches)
+        football_matches.sort(key=lambda m: m.get("date") or "")
+    except Exception as e:
+        print(f"TheSportsDB API error: {e}")
 
     try:
         boxing_events = boxing_api.get_upcoming_events()
