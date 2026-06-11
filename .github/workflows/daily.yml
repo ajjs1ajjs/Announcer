@@ -2,8 +2,8 @@ name: Daily Sports Digest
 
 on:
   schedule:
-    # UTC 05:00 = Kyiv 08:00 (взимку) або 07:00 (влітку)
-    - cron: "0 5 * * *"
+    # UTC 06:00 = Kyiv 09:00 (влітку) або 08:00 (взимку)
+    - cron: "0 6 * * *"
   workflow_dispatch:
 
 jobs:
