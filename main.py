@@ -18,7 +18,7 @@ def main():
     bot = TelegramBot(config)
 
     football_api = FootballAPI(config)
-    boxing_api = BoxingAPI()
+    boxing_api = BoxingAPI(days_ahead=config.days_ahead)
 
     try:
         football_matches = football_api.get_upcoming_matches()
@@ -35,6 +35,10 @@ def main():
         print(f"Boxing API error: {e}")
         bot.send_error(f"Boxing API: {e}")
         boxing_events = []
+
+    if not football_matches and not boxing_events:
+        print("No events today, skipping")
+        return
 
     digest = format_daily_digest(football_matches, boxing_events)
     success = bot.send_long_message(digest)

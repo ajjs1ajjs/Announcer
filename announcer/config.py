@@ -20,7 +20,7 @@ class Config:
     telegram_bot_token: str
     telegram_chat_id: str
     football_competitions: List[str] = field(default_factory=lambda: DEFAULT_COMPETITIONS)
-    days_ahead: int = 7
+    days_ahead: int = 0
     timezone_offset: int = 3
 
     @classmethod

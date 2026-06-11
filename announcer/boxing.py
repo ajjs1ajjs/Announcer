@@ -17,9 +17,10 @@ class BoxingAPI:
     WIKI_API = "https://en.wikipedia.org/w/api.php"
     HEADERS = {"User-Agent": "SportsAnnouncer/1.0 (https://github.com/sports-announcer; contact@example.com)"}
 
-    def __init__(self):
+    def __init__(self, days_ahead: int = 7):
         self._pages_cache: Optional[tuple[datetime, List[str]]] = None
         self._max_retries = 2
+        self.days_ahead = days_ahead
 
     def get_upcoming_events(self) -> List[Dict]:
         fight_titles = self._get_fight_pages()
@@ -98,6 +99,8 @@ class BoxingAPI:
         is_upcoming = self._is_upcoming(extract)
 
         if date_obj and date_obj < datetime.now() - timedelta(days=1):
+            is_upcoming = False
+        if date_obj and date_obj > datetime.now() + timedelta(days=self.days_ahead):
             is_upcoming = False
 
         titles_str = self._extract_titles(extract)

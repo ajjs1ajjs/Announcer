@@ -26,6 +26,6 @@ jobs:
           FOOTBALL_API_KEY: ${{ secrets.FOOTBALL_API_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          DAYS_AHEAD: "7"
+          DAYS_AHEAD: "0"
           TIMEZONE_OFFSET: "3"
         run: python main.py
