@@ -49,15 +49,43 @@ class FootballAPI:
         data = self._request("/competitions")
         return data.get("competitions", [])
 
+    # Known competition codes → canonical names
+    CODE_MAP = {
+        "WC": "FIFA World Cup",
+        "EC": "European Championship",
+        "CL": "UEFA Champions League",
+        "EL": "UEFA Europa League",
+        "ECL": "UEFA Conference League",
+    }
+
     def _match_competitions(self, all_comps: List[Dict]) -> List[Dict]:
         matched = []
-        target_set = {n.strip() for n in self.target_names}
+        target_lower = {n.strip().lower() for n in self.target_names}
+        target_codes = set(self.CODE_MAP.keys())
+        # If user put a code directly in FOOTBALL_COMPETITIONS, treat as code too
+        for n in self.target_names:
+            code = n.strip().upper()
+            if code in self.CODE_MAP:
+                target_codes.add(code)
         for comp in all_comps:
             name = comp.get("name", "")
             code = comp.get("code", "")
-            if name in target_set or code in target_set:
+            if name.lower() in target_lower or code in target_codes:
                 matched.append(comp)
+            else:
+                # Partial match as fallback (e.g. "FIFA World Cup 2026")
+                for target in target_lower:
+                    if target in name.lower():
+                        matched.append(comp)
+                        break
         return matched
+
+    @staticmethod
+    def _competition_emoji(name: str) -> str:
+        for key, emoji in COMPETITION_EMOJIS.items():
+            if key.lower() in name.lower():
+                return emoji
+        return "⚽"
 
     def get_upcoming_matches(self) -> List[Dict]:
         all_comps = self._get_all_competitions()
@@ -83,7 +111,7 @@ class FootballAPI:
                 parsed = self._parse_date(utc_str)
                 results.append({
                     "competition": comp_name,
-                    "emblem": COMPETITION_EMOJIS.get(comp_name, "⚽"),
+                    "emblem": self._competition_emoji(comp_name),
                     "home_team": match.get("homeTeam", {}).get("name", "?"),
                     "away_team": match.get("awayTeam", {}).get("name", "?"),
                     "home_crest": match.get("homeTeam", {}).get("crest", ""),

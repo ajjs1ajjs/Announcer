@@ -36,6 +36,7 @@ def main():
         football_matches.sort(key=lambda m: m.get("date") or "")
     except Exception as e:
         print(f"TheSportsDB API error: {e}")
+        bot.send_error(f"TheSportsDB API: {e}")
 
     try:
         boxing_events = boxing_api.get_upcoming_events()

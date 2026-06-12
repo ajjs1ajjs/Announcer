@@ -22,6 +22,7 @@ BASE_URL = "https://www.thesportsdb.com/api/v1/json/3"
 # League IDs for our target competitions
 LEAGUES = {
     "UEFA Nations League": 4490,
+    "UEFA Champions League": 4480,
     "UEFA Europa League": 4481,
     "UEFA Conference League": 5071,
     "FIFA Club World Cup": 4503,
@@ -38,7 +39,7 @@ class TheSportsDBAPI:
 
     def get_upcoming_matches(self) -> List[Dict]:
         results: List[Dict] = []
-        today = datetime.now()
+        today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
 
         for comp_name, league_id in LEAGUES.items():
             try:
@@ -53,8 +54,10 @@ class TheSportsDBAPI:
                     match = self._parse_event(ev, comp_name)
                     if match:
                         match_date = match.get("_date_obj")
-                        if match_date and (match_date < today - timedelta(days=1) or match_date > today + timedelta(days=self.days_ahead)):
-                            continue
+                        if match_date:
+                            match_day = match_date.replace(hour=0, minute=0, second=0, microsecond=0)
+                            if match_day < today - timedelta(days=1) or match_day > today + timedelta(days=self.days_ahead):
+                                continue
                         results.append(match)
             except requests.RequestException:
                 continue
@@ -72,6 +75,13 @@ class TheSportsDBAPI:
         except (ValueError, requests.exceptions.JSONDecodeError):
             return None
 
+    @staticmethod
+    def _competition_emoji(name: str) -> str:
+        for key, emoji in COMPETITION_EMOJIS.items():
+            if key.lower() in name.lower():
+                return emoji
+        return "⚽"
+
     def _parse_event(self, ev: Dict, comp_name: str) -> Optional[Dict]:
         home = ev.get("strHomeTeam") or ""
         away = ev.get("strAwayTeam") or ""
@@ -86,7 +96,7 @@ class TheSportsDBAPI:
 
         return {
             "competition": comp_name,
-            "emblem": COMPETITION_EMOJIS.get(comp_name, "⚽"),
+            "emblem": self._competition_emoji(comp_name),
             "home_team": home,
             "away_team": away,
             "home_crest": thumb,
