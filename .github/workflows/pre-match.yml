@@ -1,0 +1,45 @@
+name: Pre-Match Notification
+
+on:
+  schedule:
+    # Every 15 minutes from 09:00 to 23:59 UTC (= 12:00-02:59 Kyiv summer)
+    - cron: "*/15 9-23 * * *"
+  workflow_dispatch:
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Restore state cache
+        uses: actions/cache/restore@v4
+        with:
+          path: pre_match_state.json
+          key: pre-match-state-${{ github.run_id }}
+          restore-keys: pre-match-state-
+
+      - name: Run pre-match notification
+        env:
+          FOOTBALL_API_KEY: ${{ secrets.FOOTBALL_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DAYS_AHEAD: "0"
+          TIMEZONE_OFFSET: "3"
+        run: python pre_match.py
+
+      - name: Save state cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: pre_match_state.json
+          key: pre-match-state-${{ github.run_number }}
